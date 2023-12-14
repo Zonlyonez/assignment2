@@ -74,7 +74,7 @@ def substitute_words():
     response = {'affected_reviews': affected_reviews}
     return jsonify(response)
 
-@app.route('/index', methods=['GET', 'POST'])
+@app.route('/words', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         # Implement logic to handle form submissions
