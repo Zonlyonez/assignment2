@@ -1,0 +1,47 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Words API</title>
+</head>
+<body>
+    <h1>Zhang Wenshuo ID: 76361</h1>
+    <img src="your_picture.jpg" alt="Your Picture">
+
+    <h2>Popular Words API</h2>
+    <form action="/popular_words" method="GET">
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city" placeholder="Enter city name">
+        <label for="limit">Limit:</label>
+        <input type="number" id="limit" name="limit" value="10" min="1">
+        <button type="submit">Get Popular Words</button>
+    </form>
+    <div id="popular-words-result"></div>
+
+    <h2>Popular Words (Population) API</h2>
+    <form action="/popular_words_population" method="GET">
+        <label for="city_population">City:</label>
+        <input type="text" id="city_population" name="city" placeholder="Enter city name">
+        <label for="limit_population">Limit:</label>
+        <input type="number" id="limit_population" name="limit" value="10" min="1">
+        <button type="submit">Get Popular Words (Population)</button>
+    </form>
+    <div id="popular-words-population-result"></div>
+
+    <h2>Substitute Words API</h2>
+    <form action="/substitute_words" method="POST" id="substituteForm">
+        <label for="word">Word to Replace:</label>
+        <input type="text" id="word" name="word" placeholder="Enter word to replace">
+        <label for="substitute">Substitute:</label>
+        <input type="text" id="substitute" name="substitute" placeholder="Enter substitute word">
+        <button type="submit">Substitute Words</button>
+    </form>
+    <div id="substitute-words-result"></div>
+
+    <script>
+        // Implement JavaScript logic to handle form submissions and display results dynamically
+    </script>
+</body>
+</html>
