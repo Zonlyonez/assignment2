@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>City Distances</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js">
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/app.js"></script>
+    <script>
+        $(document).ready(function() {
+
+    // Event listener for KNN reviews form
+    $("#knnReviewsForm").submit(function(event) {
+        event.preventDefault();
+        submitForm("/stat/knn_reviews", $(this), displayResults);
+    });
+    
+    function submitForm(url, form, callback) {
+        $.ajax({
+            type: form.attr("method"),
+            url: form.attr("action"),
+            data: form.serialize(),
+            success: function(data) {
+                callback(data);
+            },
+            error: function(error) {
+                console.error("Error:", error);
+            }
+        });
+    }
+    // Function to display the pie chart
+    function displayResults(data) {
+        // Display other results (e.g., for closest cities)
+        $("#result").html("<pre>" + JSON.stringify(data, null, 2) + "</pre>");
+
+        // Check if the 'clusters' key exists in the data (for KNN reviews)
+        if ('clusters' in data) {
+            // Call the function to display the pie chart
+            displayPieChart(data.clusters);
+        }
+    }
+
+    // Function to display the pie chart
+    function displayPieChart(clusters) {
+        // Extract labels and values for the pie chart
+        var labels = clusters.map(item => item.centerCity);
+        var values = clusters.map(item => item.citiesInCluster.length);
+
+        // Create a pie chart
+        var ctx = document.getElementById('pieChart').getContext('2d');
+        var pieChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: getRandomColors(values.length)
+                }]
+            }
+        });
+
+        // Event listener for clicking on a pie chart segment
+        ctx.canvas.onclick = function(evt) {
+            var activePoints = pieChart.getElementsAtEvent(evt);
+            if (activePoints.length > 0) {
+                // Get the index of the clicked segment
+                var index = activePoints[0]._index;
+
+                // Call the function to display additional information and radar chart
+                displayRadarChart(clusters[index]);
+            }
+        };
+    }
+
+
+    // Function to generate random colors
+    function getRandomColors(count) {
+        var colors = [];
+        for (var i = 0; i < count; i++) {
+            colors.push(getRandomColor());
+        }
+        return colors;
+    }
+
+    // Function to generate a random color
+    function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+    });
+
+        // Function to display the radar chart
+    function displayRadarChart(cluster) {
+        // Extract data for the radar chart
+        var classData = {
+            labels: cluster.popularWords,
+            datasets: [{
+                label: 'Class',
+                data: getNormalizedTermFrequency(cluster, 'class'),
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }, {
+                label: 'Average',
+                data: getNormalizedTermFrequency(cluster, 'average'),
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        // Create a radar chart
+        var ctxRadar = document.getElementById('radarChart').getContext('2d');
+        var radarChart = new Chart(ctxRadar, {
+            type: 'radar',
+            data: classData,
+            options: {
+                scale: {
+                    angleLines: {
+                        display: false
+                    },
+                    ticks: {
+                        suggestedMin: 0,
+                        suggestedMax: 1
+                    }
+                }
+            }
+        });
+
+        // Display additional information
+        $("#additionalInfo").html("<pre>" + JSON.stringify(cluster, null, 2) + "</pre>");
+    }
+
+    // Function to get normalized term frequency for radar chart
+    function getNormalizedTermFrequency(cluster, type) {
+        var frequencies = cluster.normalizedTermFrequencies;
+        return type === 'class' ? frequencies.class : frequencies.average;
+    }
+
+            $("#flushCacheForm").submit(function(event) {
+                    event.preventDefault();
+                    submitForm("/flush_cache", $(this));
+            });
+
+            // Event listener for toggle cache form
+            $("#toggleCacheForm").submit(function(event) {
+                    event.preventDefault();
+                    submitForm("/toggle_cache", $(this));
+            });
+
+
+        // $(document).ready(function() {
+        //     $("#avgReviewScoresForm").submit(function(event) {
+        //         event.preventDefault();
+        //         submitForm("/get_average_review_scores", $(this),displayLineChart);
+        //     });
+
+        //     function submitForm(url, form, callback) {
+        //         $.ajax({
+        //             type: form.attr("method"),
+        //             url: form.attr("action"),
+        //             data: form.serialize(),
+        //             success: function(data) {
+        //                 console.log('AJAX request successful'); 
+        //                 callback(data);
+        //             },
+        //             error: function(error) {
+        //                 console.error("Error:", error);
+        //             }
+        //         });
+        //     }
+
+        //     function displayLineChart(data) {
+        //         var cities = data.distances.map(entry => entry.city);
+        //         var avgReviewScores = cities.map(city => data.scores[city]);
+
+        //         var ctx = document.getElementById('lineChart').getContext('2d');
+        //         var lineChart = new Chart(ctx, {
+        //             type: 'line',
+        //             data: {
+        //                 labels: cities,
+        //                 datasets: [{
+        //                     label: 'Average Review Score',
+        //                     data: avgReviewScores,
+        //                     borderColor: 'rgba(75, 192, 192, 1)',
+        //                     borderWidth: 1,
+        //                     fill: false
+        //                 }]
+        //             },
+        //             options: {
+        //                   scales: {
+        //                             y: {
+        //                              beginAtZero: true
+        //                             }
+        //                   }
+        //             }
+        //         });
+        //     }
+        // });
+
+//         var currentPage = 1;
+
+// function submitscoreQuery() {
+//     var cityName = $('#cityName').val();
+//     var stateName = $('#stateName').val();
+
+//     // AJAX request to get distances
+//     $.ajax({
+//         type: 'GET',
+//         url: '/get_average_review_scores',
+//         data: { cityName: cityName, stateName: stateName},
+//         success: function (response) {
+//             // Update chart and response time
+//             updateBarChart(response);
+//             updateResponseTime(response.computationTime);
+//             console.log(response)
+
+//             // Update current page display
+//             $('#currentPage').text('Page ' + currentPage);
+//         },
+//         error: function (error) {
+//             console.error('Error:', error);
+//         }
+//     });
+// }
+
+// function updateLineChart(data) {
+//     var cities = data.distances.map(entry => entry.city);
+//     var avgReviewScores = cities.map(city => data.scores[city]);
+
+
+//     // Use Chart.js to update the bar chart
+//     var ctx = document.getElementById('lineChart').getContext('2d');
+//     var barChart = new Chart(ctx, {
+//         type: 'bar',
+//         data: {
+//             labels: cities,
+//             datasets: [{
+//                 label: 'score',
+//                 data: avgReviewScores,
+//                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
+//                 borderColor: 'rgba(75, 192, 192, 1)',
+//                 borderWidth: 1
+//             }]
+//         },
+//         options: {
+//             scales: {
+//                 y: {
+//                     beginAtZero: true
+//                 }
+//             }
+//         }
+//     });
+// }
+
+// function previousPage() {
+//     if (currentPage > 1) {
+//         currentPage--;
+//         submitDistanceQuery();
+//     }
+// }
+
+// function nextPage() {
+//     currentPage++;
+//     submitDistanceQuery();
+// }
+
+// function updateResponseTime(responseTime) {
+//     $('#responseTime').text('Response Time: ' + responseTime + ' ms');
+// }
+
+
+    </script>
+</head>
+<body>
+
+    <h1>Zhang Zhen 75973 and Zhang Wenshuo 76361</h1>
+    <!-- Flush Cache button -->
+    <form id="flushCacheForm" action="/flush_cache" method="post">
+        <button type="submit">Flush Cache</button>
+    </form>
+
+    <!-- Toggle Cache button -->
+    <form id="toggleCacheForm" action="/toggle_cache" method="get">
+        <button type="submit"> Redis Cache</button>
+    </form>
+    <h1>City Distances Question10</h1>
+    
+    <!-- Input form for city and state -->
+    <form id="distanceForm">
+        <label for="cityName">City Name:</label>
+        <input type="text" id="cityName" required>
+        
+        <label for="stateName">State Name:</label>
+        <input type="text" id="stateName" required>
+
+        <button type="button" onclick="submitDistanceQuery()">Submit Query</button>
+        <div class="Pagination">
+            <button onclick="previousPage()">Previous Page</button>
+            <button onclick="nextPage()">Next Page</button>
+        </div>
+    </form>
+    <div>
+        <canvas id="barChart" width="600" height="300"></canvas>
+    </div>
+    <h1>Question11</h1>
+    <form id="avgReviewScoresForm" action="/get_average_review_scores" method="get">
+        <label for="cityName">City Name:</label>
+        <input type="text" id="cityName" name="cityName" required>
+        <label for="stateName">State Name:</label>
+        <input type="text" id="stateName" name="stateName" required>
+        <button type="submit" >Get Avg Review Scores</button>
+        <div class="Pagination">
+            <button onclick="previousPage()">Previous Page</button>
+            <button onclick="nextPage()">Next Page</button>
+        </div>
+    </form>
+    
+    <canvas id="lineChart" width="400" height="200"></canvas>
+    
+
+    <h2>Question12.13</h2>
+    <!-- Form for KNN reviews -->
+    <form id="knnReviewsForm" action="/stat/knn_reviews" method="get">
+        <label for="classes">Number of Classes:</label>
+        <input type="number" id="classes" name="classes" value="6" min="1">
+        <label for="k">K Value:</label>
+        <input type="number" id="k" name="k" value="3" min="1">
+        <label for="words">Number of Words:</label>
+        <input type="number" id="words" name="words" value="100" min="1">
+        <button type="submit">Get KNN Reviews</button>
+    </form>
+
+
+    <div>
+        <canvas id="pieChart" width="600" height="300"></canvas>
+    </div>
+
+    <!-- Pagination buttons -->
+
+    <!-- Response time display -->
+    <p id="responseTime"></p>
+
+    <!-- Current page display -->
+    <p id="currentPage"></p>
+</body>
+</html>
